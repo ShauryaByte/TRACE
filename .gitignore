@@ -1,0 +1,67 @@
+## .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+artifacts/
+
+# Build logs and diagnostics
+[Ll]og/
+[Ll]ogs/
+*.log
+*.binlog
+app_activity.log
+
+# Test results and automation flags
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+*.flag
+window_handle.txt
+mini_window_handle.txt
+
+# Development scratch and local bootstrap scripts
+scratch/
+dotnet-install.ps1
+*.zip
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+# MSIX packaging output
+AppPackages/
+BundleArtifacts/
+*.msix
+*.msixupload
+*.appx
+*.appxbundle
+*.appxupload
+
+# Publish profiles and output
+publish/
+PublishScripts/
+*.pubxml
+!Properties/PublishProfiles/win-x64.pubxml
+!Properties/PublishProfiles/win-arm64.pubxml
+!Properties/PublishProfiles/win-x86.pubxml
+
+# Code analysis and tooling
+_ReSharper*/
+*.DotSettings.user
+*.dotCover
+.idea/
+
+# Generated files
+Generated\ Files/
+*_wpftmp.csproj

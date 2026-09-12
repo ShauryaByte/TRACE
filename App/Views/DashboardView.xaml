@@ -1,0 +1,1074 @@
+<Page
+    x:Class="NetStats.UI.Views.DashboardView"
+    x:Name="Root"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:NetStats.UI.Controls"
+    xmlns:models="using:NetStats.Core.Models"
+    Background="Transparent"
+    Loaded="OnDashboardLoaded"
+    SizeChanged="OnDashboardSizeChanged">
+
+    <Grid>
+        <!-- ============================================ -->
+        <!-- EXPANDED DASHBOARD — RICH ATMOSPHERIC NETWORK INSTRUMENT -->
+        <!-- ============================================ -->
+        <Grid x:Name="ExpandedRoot" Padding="10,6,10,6"
+              Visibility="{x:Bind ViewModel.IsDashboardViewVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <!-- Primary Atmospheric Instrument Chassis (Single Unified Housing) -->
+            <Border x:Name="InstrumentChassis"
+                    CornerRadius="14"
+                    BorderBrush="{StaticResource AtmosphereChassisRimBrush}"
+                    BorderThickness="1.5"
+                    Background="{StaticResource AppBackgroundBaseBrush}"
+                    Padding="14,10,14,8">
+                <Grid>
+                    <!-- ============================================ -->
+                    <!-- ATMOSPHERIC ILLUMINATION LAYERS (Clearly visible at runtime & idle) -->
+                    <!-- ============================================ -->
+                    <!-- Base atmospheric gradient substrate -->
+                    <Border CornerRadius="12">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#F0090D18" Offset="0.0" />
+                                <GradientStop Color="#F8060810" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <!-- ============================================ -->
+                    <!-- ATMOSPHERIC LIGHT FIELDS (Instrument-integrated energy) -->
+                    <!-- These are not decorative blobs — they are the spectral emanation -->
+                    <!-- of the download and upload channels as seen through the instrument housing. -->
+                    <!-- ============================================ -->
+
+                    <!-- Emerald Download: diagonal light wash from top-left corner,
+                         asymmetric so it reads as radiance bleeding from the waveform,
+                         not a placed shape. -->
+                    <Rectangle x:Name="DownloadAtmosphereBloom"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                               Height="200" Margin="0,0,0,0"
+                               IsHitTestVisible="False" Opacity="0.6">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#3200E599" Offset="0.0" />
+                                <GradientStop Color="#1A00E599" Offset="0.3" />
+                                <GradientStop Color="#0800C8B4" Offset="0.6" />
+                                <GradientStop Color="#0000E599" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
+                    <!-- Electric Blue Upload: diagonal light wash from top-right corner -->
+                    <Rectangle x:Name="UploadAtmosphereBloom"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                               Height="200" Margin="0,0,0,0"
+                               IsHitTestVisible="False" Opacity="0.6">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="1,0" EndPoint="0,1">
+                                <GradientStop Color="#2A00A3FF" Offset="0.0" />
+                                <GradientStop Color="#1500A3FF" Offset="0.3" />
+                                <GradientStop Color="#080060CC" Offset="0.6" />
+                                <GradientStop Color="#0000A3FF" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
+                    <!-- Violet depth field: bottom-right to top-left, giving the
+                         instrument a sense of depth and chromatic falloff -->
+                    <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                               IsHitTestVisible="False" Opacity="0.35">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
+                                <GradientStop Color="#228A2BE2" Offset="0.0" />
+                                <GradientStop Color="#0E4C1D95" Offset="0.45" />
+                                <GradientStop Color="#00000000" Offset="0.8" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
+                    <!-- Instrument datum scan lines: extremely faint horizontal reference marks -->
+                    <Grid Opacity="0.05" IsHitTestVisible="False">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <Border Grid.Row="1" Height="1" Background="{StaticResource AccentPrimaryBrush}" />
+                        <Border Grid.Row="2" Height="1" Background="{StaticResource AccentPrimaryBrush}" />
+                        <Border Grid.Row="3" Height="1" Background="{StaticResource AccentPrimaryBrush}" />
+                    </Grid>
+
+                    <!-- ============================================ -->
+                    <!-- INSTRUMENT CONSOLE LAYOUT (ONE INTEGRATED INSTRUMENT) -->
+                    <!-- ============================================ -->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <!-- Row 0: PRIMARY THROUGHPUT INSTRUMENT & WAVEFORM ENERGY TRACE -->
+                            <RowDefinition Height="Auto" />
+                            <!-- Row 1: INTEGRATED MIDDLE WORKSPACE (ACTIVE APPS + QUICK CONTROLS RAIL) -->
+                            <RowDefinition Height="*" MinHeight="100" />
+                            <!-- Row 2: INTEGRATED SESSION BASELINE (ANCHORED AT BOTTOM) -->
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- ========== ROW 0: PRIMARY THROUGHPUT INSTRUMENT & WAVEFORM ========== -->
+                        <Grid Grid.Row="0" Margin="0,0,0,8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Dual-Channel Readouts — Responsive Hero -->
+                            <!-- Each channel is strictly confined to its column half. -->
+                            <!-- At compact widths the code-behind shrinks value font and -->
+                            <!-- enforces a MaxWidth so content can never cross the center. -->
+                            <Grid Grid.Row="0" Margin="4,0,4,6" x:Name="HeroReadoutGrid">
+                                <Grid.ColumnDefinitions>
+                                    <!-- Left channel: proportional, never bleeds past center -->
+                                    <ColumnDefinition Width="*" />
+                                    <!-- Center divider: fixed, guaranteed clear zone -->
+                                    <ColumnDefinition Width="Auto" MinWidth="1" />
+                                    <!-- Right channel: proportional, mirror of left -->
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Channel A: Download Pole (Emerald) -->
+                                <!-- HorizontalAlignment=Left ensures content anchors LEFT and cannot
+                                     push beyond the column boundary into the center. -->
+                                <Grid Grid.Column="0" x:Name="DownloadHeroContainer"
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                    <StackPanel HorizontalAlignment="Left">
+                                        <!-- Channel Badge -->
+                                        <StackPanel Orientation="Horizontal" Spacing="5" Margin="0,0,0,2">
+                                            <Grid Width="9" Height="9" VerticalAlignment="Center">
+                                                <Ellipse Width="9" Height="9" Fill="{StaticResource DownloadFlowBrush}" Opacity="0.30" />
+                                                <Ellipse Width="4.5" Height="4.5" Fill="{StaticResource DownloadFlowBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Grid>
+                                            <TextBlock Text="&#x2193;" FontSize="11" FontWeight="Bold" Foreground="{StaticResource DownloadFlowBrush}" VerticalAlignment="Center" />
+                                            <TextBlock x:Name="DownloadLabel" Text="DOWNLOAD" FontSize="9" FontWeight="Bold" CharacterSpacing="85" Foreground="{StaticResource DownloadFlowBrush}" VerticalAlignment="Center" />
+                                        </StackPanel>
+
+                                        <!-- Value + Unit: kept as a tight horizontal unit -->
+                                        <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Bottom">
+                                            <TextBlock x:Name="DownloadValueText"
+                                                       Text="{x:Bind ViewModel.DownloadValueString, Mode=OneWay}"
+                                                       FontFamily="{StaticResource MonospaceFontFamily}"
+                                                       FontSize="42" FontWeight="Bold"
+                                                       Foreground="{StaticResource DownloadValueBrush}"
+                                                       VerticalAlignment="Bottom" />
+                                            <Border x:Name="DownloadUnitBadge" VerticalAlignment="Bottom" Margin="0,0,0,7" Padding="5,2" CornerRadius="4" Background="#2000E599">
+                                                <TextBlock x:Name="DownloadUnitText"
+                                                           Text="{x:Bind ViewModel.SpeedUnitLabel, Mode=OneWay}"
+                                                           FontFamily="{StaticResource AppFontFamily}"
+                                                           FontSize="11" FontWeight="Bold"
+                                                           Foreground="{StaticResource DownloadFlowBrush}" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+
+                                <!-- Central Precision Channel Divider —
+                                     A guaranteed visual boundary. Glow may bleed across;
+                                     text content is constrained to its column by the Grid. -->
+                                <Grid Grid.Column="1" Width="25" VerticalAlignment="Stretch">
+                                    <!-- Atmospheric center glow (allowed to cross) -->
+                                    <Border HorizontalAlignment="Center" Width="40" VerticalAlignment="Stretch"
+                                            IsHitTestVisible="False" Opacity="0.5">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                <GradientStop Color="#0000E599" Offset="0.0" />
+                                                <GradientStop Color="#1000A3FF" Offset="0.5" />
+                                                <GradientStop Color="#0000E599" Offset="1.0" />
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+                                    <!-- Hairline divider -->
+                                    <Border HorizontalAlignment="Center" Width="1" Height="44" VerticalAlignment="Center"
+                                            Background="{StaticResource AtmosphericVerticalDividerBrush}" />
+                                </Grid>
+
+                                <!-- Channel B: Upload Pole (Electric Blue) -->
+                                <!-- HorizontalAlignment=Right ensures content anchors RIGHT -->
+                                <Grid Grid.Column="2" x:Name="UploadHeroContainer"
+                                      HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                                    <StackPanel HorizontalAlignment="Right">
+                                        <!-- Channel Badge -->
+                                        <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right" Margin="0,0,0,2">
+                                            <TextBlock x:Name="UploadLabel" Text="UPLOAD" FontSize="9" FontWeight="Bold" CharacterSpacing="85" Foreground="{StaticResource UploadFlowBrush}" VerticalAlignment="Center" />
+                                            <TextBlock Text="&#x2191;" FontSize="11" FontWeight="Bold" Foreground="{StaticResource UploadFlowBrush}" VerticalAlignment="Center" />
+                                            <Grid Width="9" Height="9" VerticalAlignment="Center">
+                                                <Ellipse Width="9" Height="9" Fill="{StaticResource UploadFlowBrush}" Opacity="0.30" />
+                                                <Ellipse Width="4.5" Height="4.5" Fill="{StaticResource UploadFlowBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </StackPanel>
+
+                                        <!-- Value + Unit -->
+                                        <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                                            <TextBlock x:Name="UploadValueText"
+                                                       Text="{x:Bind ViewModel.UploadValueString, Mode=OneWay}"
+                                                       FontFamily="{StaticResource MonospaceFontFamily}"
+                                                       FontSize="42" FontWeight="Bold"
+                                                       Foreground="{StaticResource UploadValueBrush}"
+                                                       VerticalAlignment="Bottom" />
+                                            <Border x:Name="UploadUnitBadge" VerticalAlignment="Bottom" Margin="0,0,0,7" Padding="5,2" CornerRadius="4" Background="#2000A3FF">
+                                                <TextBlock x:Name="UploadUnitText"
+                                                           Text="{x:Bind ViewModel.SpeedUnitLabel, Mode=OneWay}"
+                                                           FontFamily="{StaticResource AppFontFamily}"
+                                                           FontSize="11" FontWeight="Bold"
+                                                           Foreground="{StaticResource UploadFlowBrush}" />
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+
+                            <!-- Waveform Chamber: Seamless Open Live Energy Trace (No heavy boxy card!) -->
+                            <Grid Grid.Row="1" x:Name="HeroSignalField" Height="{StaticResource CompactHeroSignalHeight}" Margin="0,2,0,0">
+                                <!-- Translucent energy floor bed -->
+                                <Border CornerRadius="8" Background="{StaticResource AtmosphereWaveformFloorBrush}" BorderBrush="{StaticResource AtmosphereInnerRimBrush}" BorderThickness="0.75" />
+                                <!-- Live Oscilloscope Flow Visualizer -->
+                                <controls:FlowVisualizer DownloadSpeed="{x:Bind ViewModel.DownloadSpeed, Mode=OneWay}"
+                                                         UploadSpeed="{x:Bind ViewModel.UploadSpeed, Mode=OneWay}" />
+                            </Grid>
+                        </Grid>
+
+                        <!-- Horizontal Hairline Separator Between Hero and Workspace -->
+                        <Border Grid.Row="0" VerticalAlignment="Bottom" Height="1" Background="{StaticResource AtmosphericDividerBrush}" Margin="-14,0,-14,-1" />
+
+                        <!-- ========== ROW 1: INTEGRATED MIDDLE WORKSPACE (ACTIVE APPS + QUICK CONTROLS RAIL) ========== -->
+                        <Grid Grid.Row="1" Margin="0,6,0,6">
+                            <Grid.ColumnDefinitions>
+                                <!-- Active Applications takes primary width -->
+                                <ColumnDefinition x:Name="ActivityColumn" Width="*" />
+                                <!-- Quick Controls integrated rail (visible on wider layouts >=480px) -->
+                                <ColumnDefinition x:Name="QuickControlsColumn" Width="0" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- ============================================ -->
+                            <!-- ACTIVITY AREA LOCALIZED ATMOSPHERIC ILLUMINATION -->
+                            <!-- These blooms give the lower half of the instrument its own depth -->
+                            <!-- so it never reads as a dark empty box beneath the hero. -->
+                            <!-- ============================================ -->
+
+                            <!-- Activity zone atmospheric continuity:
+                                 These fields are the same light energy descending from the
+                                 hero into the activity workspace below. They stretch and
+                                 fade rather than sitting as placed circles. -->
+
+                            <!-- Emerald channel energy descending from top-left -->
+                            <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                       Height="120" IsHitTestVisible="False" Opacity="0.55">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#1A00E599" Offset="0.0" />
+                                        <GradientStop Color="#0800E599" Offset="0.5" />
+                                        <GradientStop Color="#0000E599" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+
+                            <!-- Violet depth energy in bottom-right of activity zone -->
+                            <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                                       Height="90" IsHitTestVisible="False" Opacity="0.4">
+                                <Rectangle.Fill>
+                                    <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
+                                        <GradientStop Color="#1A8A2BE2" Offset="0.0" />
+                                        <GradientStop Color="#084C1D95" Offset="0.6" />
+                                        <GradientStop Color="#00000000" Offset="1.0" />
+                                    </LinearGradientBrush>
+                                </Rectangle.Fill>
+                            </Rectangle>
+
+                            <!-- Active Applications Workspace -->
+                            <Grid Grid.Column="0">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Header: ACTIVE APPLICATIONS & Inspect Trigger -->
+                                <Grid Grid.Row="0" Margin="4,2,4,4">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                        <Grid Width="7" Height="7" VerticalAlignment="Center">
+                                            <Ellipse Width="7" Height="7" Fill="{StaticResource AccentPrimaryBrush}" Opacity="0.35" />
+                                            <Ellipse Width="3.5" Height="3.5" Fill="{StaticResource AccentPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Grid>
+                                        <TextBlock Text="ACTIVE APPLICATIONS" FontSize="9" FontWeight="Bold" CharacterSpacing="85" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <Button x:Name="InspectOpenButton" Grid.Column="1" Click="OnDetailsClicked" Style="{StaticResource InstrumentTextButtonStyle}" Padding="6,2" HorizontalAlignment="Right" ToolTipService.ToolTip="Open Inspect diagnostics">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="Inspect" FontSize="10" FontWeight="SemiBold" Foreground="{StaticResource AccentTextColor}" />
+                                            <TextBlock Text="&#x2192;" FontSize="10" Foreground="{StaticResource AccentPrimaryBrush}" />
+                                        </StackPanel>
+                                    </Button>
+                                </Grid>
+
+                                <!-- Dedicated Scrollable Region for Activity Rows -->
+                                <ScrollViewer x:Name="ActivityScrollViewer"
+                                              Grid.Row="1"
+                                              VerticalScrollBarVisibility="Auto"
+                                              HorizontalScrollBarVisibility="Disabled"
+                                              Padding="0,0,2,0">
+                                    <StackPanel>
+                                        <ItemsControl ItemsSource="{x:Bind ViewModel.DashboardCurrentActivity, Mode=OneWay}"
+                                                      Visibility="{x:Bind ViewModel.HasDashboardActivity, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="models:ProcessTraffic">
+                                                    <!-- Activity row: subtle emerald channel glow on left edge -->
+                                                    <Border Margin="0,0,0,2" Padding="4,4" CornerRadius="6"
+                                                            Background="{StaticResource AtmosphereActiveRowHighlightBrush}">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto" />
+                                                                <RowDefinition Height="1" />
+                                                            </Grid.RowDefinitions>
+
+                                                            <Grid Grid.Row="0" Margin="0,0,0,4">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <!-- Column 0: Monogram Slot -->
+                                                                    <ColumnDefinition Width="28" />
+                                                                    <!-- Column 1: Process Identity -->
+                                                                    <ColumnDefinition Width="*" MinWidth="0" />
+                                                                    <!-- Column 2: Download Rate Column -->
+                                                                    <ColumnDefinition Width="80" />
+                                                                    <!-- Column 3: Upload Rate Column -->
+                                                                    <ColumnDefinition Width="80" />
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <!-- Jewel Monogram Badge -->
+                                                                <Border Grid.Column="0" Width="26" Height="26" CornerRadius="6"
+                                                                        Background="{StaticResource MonogramJewelBrush}"
+                                                                        BorderBrush="{StaticResource AtmosphereInnerRimBrush}" BorderThickness="1"
+                                                                        VerticalAlignment="Center" HorizontalAlignment="Center">
+                                                                    <TextBlock Text="{x:Bind Monogram}" FontSize="8.5" FontWeight="Bold"
+                                                                               FontFamily="{StaticResource MonospaceFontFamily}"
+                                                                               Foreground="{StaticResource AccentTextColor}"
+                                                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                                </Border>
+
+                                                                <!-- Process Identity (Name + Executable) -->
+                                                                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="1" Margin="8,0,6,0">
+                                                                    <TextBlock Text="{x:Bind DisplayName}" FontSize="12" FontWeight="SemiBold"
+                                                                               Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                                    <TextBlock Text="{x:Bind ExecutableName}" FontSize="8.5"
+                                                                               Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" />
+                                                                </StackPanel>
+
+                                                                <!-- Download Rate Column (Tabular, Right-Aligned) -->
+                                                                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                                    <TextBlock Text="&#x2193;" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DownloadFlowBrush}" VerticalAlignment="Center" />
+                                                                    <TextBlock Text="{x:Bind FormattedDownloadRate, Mode=OneWay}" FontSize="11" FontFamily="{StaticResource MonospaceFontFamily}" FontWeight="Bold" Foreground="{StaticResource DownloadValueBrush}" VerticalAlignment="Center" TextAlignment="Right" />
+                                                                </StackPanel>
+
+                                                                <!-- Upload Rate Column (Tabular, Right-Aligned) -->
+                                                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                                    <TextBlock Text="&#x2191;" FontSize="10" FontWeight="Bold" Foreground="{StaticResource UploadFlowBrush}" VerticalAlignment="Center" />
+                                                                    <TextBlock Text="{x:Bind FormattedUploadRate, Mode=OneWay}" FontSize="11" FontFamily="{StaticResource MonospaceFontFamily}" FontWeight="SemiBold" Foreground="{StaticResource UploadValueBrush}" VerticalAlignment="Center" TextAlignment="Right" />
+                                                                </StackPanel>
+                                                            </Grid>
+
+                                                            <!-- Soft Edge-Fading Row Divider -->
+                                                            <Border Grid.Row="1" Height="1" Background="{StaticResource AtmosphericDividerBrush}" Opacity="0.4" />
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <!-- ============================================ -->
+                                        <!-- QUIESCENT INSTRUMENT STATE —                 -->
+                                        <!-- A sophisticated dormant signal field.        -->
+                                        <!-- Minimal geometry: the instrument is active   -->
+                                        <!-- but no traffic is flowing. Read as a premium  -->
+                                        <!-- standby state, not a literal radar widget.   -->
+                                        <!-- ============================================ -->
+                                        <Grid Visibility="{x:Bind ViewModel.HasDashboardActivity, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
+                                              HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                              MinHeight="88">
+
+                                            <!-- Dormant field: a soft horizontal light trace
+                                                 across the center of the activity zone —
+                                                 reads as a signal baseline, not a radar ring. -->
+                                            <Border HorizontalAlignment="Stretch" VerticalAlignment="Center"
+                                                    Height="1" IsHitTestVisible="False" Opacity="0.35">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                                        <GradientStop Color="#0000E599" Offset="0.0" />
+                                                        <GradientStop Color="#2200E599" Offset="0.25" />
+                                                        <GradientStop Color="#3500F2FE" Offset="0.5" />
+                                                        <GradientStop Color="#2200A3FF" Offset="0.75" />
+                                                        <GradientStop Color="#0000A3FF" Offset="1.0" />
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+
+                                            <!-- Soft vertical energy column at center —
+                                                 gives the baseline a faint pillar of light -->
+                                            <Border HorizontalAlignment="Center" VerticalAlignment="Stretch"
+                                                    Width="60" IsHitTestVisible="False" Opacity="0.18">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                                        <GradientStop Color="#0000E599" Offset="0.0" />
+                                                        <GradientStop Color="#1800F2FE" Offset="0.4" />
+                                                        <GradientStop Color="#2200F2FE" Offset="0.5" />
+                                                        <GradientStop Color="#1800A3FF" Offset="0.6" />
+                                                        <GradientStop Color="#0000A3FF" Offset="1.0" />
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+
+                                            <!-- Status: minimal, elegant, instrument-grade -->
+                                            <StackPanel Orientation="Horizontal" Spacing="8"
+                                                        HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                <!-- Dormant signal indicator: single small dot -->
+                                                <Grid Width="5" Height="5" VerticalAlignment="Center">
+                                                    <Ellipse Width="5" Height="5"
+                                                             Fill="{StaticResource AccentPrimaryBrush}"
+                                                             Opacity="0.45" />
+                                                </Grid>
+                                                <TextBlock Text="MONITORING" FontSize="8" FontWeight="Bold"
+                                                           CharacterSpacing="100"
+                                                           Foreground="{StaticResource AccentPrimaryBrush}"
+                                                           Opacity="0.5"
+                                                           VerticalAlignment="Center" />
+                                                <!-- Thin separator -->
+                                                <Border Width="1" Height="10" Background="{StaticResource AtmosphereInnerRimBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{x:Bind ViewModel.DashboardDormantStatusText, Mode=OneWay}" FontSize="8.5"
+                                                           Foreground="{StaticResource TextMutedBrush}"
+                                                           Opacity="0.7"
+                                                           VerticalAlignment="Center" />
+                                            </StackPanel>
+                                        </Grid>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+
+                            <!-- Quick Controls as an Integrated Control Rail (Not a separate card!) -->
+                            <Grid x:Name="QuickControlsModule"
+                                  Grid.Column="1"
+                                  Margin="12,0,0,0"
+                                  Visibility="Collapsed">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <!-- Integrated Vertical Separator -->
+                                <Border Grid.Column="0" Width="1" Background="{StaticResource AtmosphericVerticalDividerBrush}" Margin="0,4" />
+
+                                <!-- Rail Content -->
+                                <Grid Grid.Column="1" Margin="10,0,0,0" RowSpacing="8">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Rail Header -->
+                                    <StackPanel Grid.Row="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center" Margin="2,2,0,4">
+                                        <Grid Width="7" Height="7" VerticalAlignment="Center">
+                                            <Ellipse Width="7" Height="7" Fill="{StaticResource AccentPrimaryBrush}" Opacity="0.35" />
+                                            <Ellipse Width="3.5" Height="3.5" Fill="{StaticResource AccentPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                        </Grid>
+                                        <TextBlock Text="CONTROLS" FontSize="9" FontWeight="Bold" CharacterSpacing="85" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+
+                                    <!-- Instrument Controls Stack -->
+                                    <StackPanel Grid.Row="1" Spacing="8" VerticalAlignment="Top">
+                                        <!-- Always On Top (Pin) Control -->
+                                        <Button x:Name="QuickPinButton"
+                                                Click="OnQuickPinClicked"
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                Style="{StaticResource InstrumentIconButtonStyle}"
+                                                Padding="8,6"
+                                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                                Background="{StaticResource AppBackgroundCardBrush}"
+                                                BorderBrush="{StaticResource AtmosphereInnerRimBrush}"
+                                                BorderThickness="1"
+                                                ToolTipService.ToolTip="Toggle Always On Top">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <FontIcon x:Name="QuickPinIcon" Glyph="&#xE718;" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="Always On Top" Grid.Column="1" FontSize="9.5" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                <Border x:Name="QuickPinStatusBadge" Grid.Column="2" Padding="4,1" CornerRadius="3" Background="Transparent" VerticalAlignment="Center">
+                                                    <TextBlock x:Name="QuickPinStatusText" Text="OFF" FontSize="8" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" />
+                                                </Border>
+                                            </Grid>
+                                        </Button>
+
+                                        <!-- Mini Speed Window Overlay Button -->
+                                        <Button x:Name="QuickMiniButton"
+                                                AutomationProperties.AutomationId="QuickMiniButton"
+                                                Click="OnQuickMiniClicked"
+                                                HorizontalAlignment="Stretch"
+                                                HorizontalContentAlignment="Stretch"
+                                                Style="{StaticResource InstrumentIconButtonStyle}"
+                                                Padding="8,6"
+                                                CornerRadius="{StaticResource ControlCornerRadius}"
+                                                Background="{StaticResource AppBackgroundCardBrush}"
+                                                BorderBrush="{StaticResource AtmosphereInnerRimBrush}"
+                                                BorderThickness="1"
+                                                ToolTipService.ToolTip="Toggle Mini Speed Overlay">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                    <ColumnDefinition Width="Auto" />
+                                                </Grid.ColumnDefinitions>
+                                                <FontIcon Glyph="&#xE7FB;" FontSize="11" Foreground="{StaticResource UploadFlowBrush}" VerticalAlignment="Center" />
+                                                <TextBlock Text="Mini Overlay" Grid.Column="1" FontSize="9.5" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                <FontIcon Glyph="&#xE8A7;" Grid.Column="2" FontSize="9" Foreground="{StaticResource AccentTextColor}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </Button>
+
+                                        <!-- Hairline Divider -->
+                                        <Border Height="1" Background="{StaticResource AtmosphericDividerBrush}" Margin="0,2" />
+
+                                        <!-- Sensors Group -->
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="SENSORS" FontSize="8" FontWeight="Bold" CharacterSpacing="85" Foreground="{StaticResource TextSecondaryBrush}" Margin="2,0,0,0" />
+
+                                            <!-- Microphone Sensor Indicator -->
+                                            <Border Background="{StaticResource AppBackgroundCardBrush}"
+                                                    BorderBrush="{StaticResource AtmosphereInnerRimBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                                    Padding="8,5">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <FontIcon Glyph="&#xE720;" FontSize="11" Foreground="{x:Bind ViewModel.MicrophoneBrush, Mode=OneWay}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Microphone" Grid.Column="1" FontSize="9" FontWeight="Medium" Foreground="{StaticResource TextSecondaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{x:Bind ViewModel.MicrophoneStatusText, Mode=OneWay}" Grid.Column="2" FontSize="7.5" FontWeight="Bold" Foreground="{x:Bind ViewModel.MicrophoneBrush, Mode=OneWay}" VerticalAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+
+                                            <!-- Camera Sensor Indicator -->
+                                            <Border Background="{StaticResource AppBackgroundCardBrush}"
+                                                    BorderBrush="{StaticResource AtmosphereInnerRimBrush}"
+                                                    BorderThickness="1"
+                                                    CornerRadius="{StaticResource ControlCornerRadius}"
+                                                    Padding="8,5">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" />
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <FontIcon Glyph="&#xE722;" FontSize="11" Foreground="{x:Bind ViewModel.CameraBrush, Mode=OneWay}" VerticalAlignment="Center" />
+                                                    <TextBlock Text="Camera" Grid.Column="1" FontSize="9" FontWeight="Medium" Foreground="{StaticResource TextSecondaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{x:Bind ViewModel.CameraStatusText, Mode=OneWay}" Grid.Column="2" FontSize="7.5" FontWeight="Bold" Foreground="{x:Bind ViewModel.CameraBrush, Mode=OneWay}" VerticalAlignment="Center" />
+                                                </Grid>
+                                            </Border>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+                        </Grid>
+
+                        <!-- Horizontal Hairline Separator Above Session Baseline —
+                             The center receives a stronger luminous accent (the "light catch"
+                             where the activity field meets the baseline rail).           -->
+                        <Border Grid.Row="1" VerticalAlignment="Bottom" Height="1" Margin="-14,0,-14,-1">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                    <GradientStop Color="#00FFFFFF" Offset="0.0" />
+                                    <GradientStop Color="#1800F2FE" Offset="0.2" />
+                                    <GradientStop Color="#5500F2FE" Offset="0.42" />
+                                    <GradientStop Color="#9000F2FE" Offset="0.5" />
+                                    <GradientStop Color="#5500F2FE" Offset="0.58" />
+                                    <GradientStop Color="#1800F2FE" Offset="0.8" />
+                                    <GradientStop Color="#00FFFFFF" Offset="1.0" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                        </Border>
+
+                        <!-- ========== ROW 2: INTEGRATED SESSION BASELINE (ANCHORED AT BOTTOM) ========== -->
+                        <Grid Grid.Row="2" Height="32" Margin="4,4,4,0" VerticalAlignment="Center">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" MinWidth="0" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <!-- Session Totals with Download (emerald) & Upload (blue) Tabular Monospace Readouts -->
+                            <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <TextBlock Text="SESSION" FontSize="8.5" FontWeight="Bold" CharacterSpacing="85" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                <Border Width="1" Height="11" Background="{StaticResource AtmosphereInnerRimBrush}" VerticalAlignment="Center" Margin="0,0,2,0" />
+                                
+                                <!-- Session Download -->
+                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                    <TextBlock Text="&#x2193;" FontSize="10" FontWeight="Bold" Foreground="{StaticResource DownloadFlowBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind ViewModel.SessionDownloadString, Mode=OneWay}" FontFamily="{StaticResource MonospaceFontFamily}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource DownloadValueBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                                
+                                <!-- Separation Dot -->
+                                <Border Width="3" Height="3" CornerRadius="1.5" Background="{StaticResource AccentPrimaryBrush}" Opacity="0.4" VerticalAlignment="Center" Margin="3,0" />
+                                
+                                <!-- Session Upload -->
+                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                    <TextBlock Text="&#x2191;" FontSize="10" FontWeight="Bold" Foreground="{StaticResource UploadFlowBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Bind ViewModel.SessionUploadString, Mode=OneWay}" FontFamily="{StaticResource MonospaceFontFamily}" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource UploadValueBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- System Status Beacon (Concept 03 LIVE Indicator) -->
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                <Grid Width="8" Height="8" VerticalAlignment="Center">
+                                    <Ellipse Width="8" Height="8" Fill="{x:Bind ViewModel.SignalIndicatorBrush, Mode=OneWay}" Opacity="0.30" />
+                                    <Ellipse Width="4" Height="4" Fill="{x:Bind ViewModel.SignalIndicatorBrush, Mode=OneWay}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Grid>
+                                <TextBlock Text="{x:Bind ViewModel.CurrentSignal, Mode=OneWay}" FontSize="9" FontWeight="Bold" Foreground="{x:Bind ViewModel.SignalTextBrush, Mode=OneWay}" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ============================================ -->
+        <!-- INSPECT VIEW -->
+        <!-- ============================================ -->
+        <Grid x:Name="InspectRoot" Padding="10,6,10,6"
+              Visibility="{x:Bind ViewModel.IsInspectViewVisible, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+
+            <!-- Primary Atmospheric Instrument Chassis (Unified with Dashboard) -->
+            <Border x:Name="InspectChassis"
+                    CornerRadius="14"
+                    BorderBrush="{StaticResource AtmosphereChassisRimBrush}"
+                    BorderThickness="1.5"
+                    Background="{StaticResource AppBackgroundBaseBrush}"
+                    Padding="14,10,14,10">
+                <Grid>
+                    <!-- Base atmospheric gradient substrate -->
+                    <Border CornerRadius="12">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                <GradientStop Color="#F0090D18" Offset="0.0" />
+                                <GradientStop Color="#F8060810" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+
+                    <!-- Subtle cyan-violet atmospheric depth wash in corners -->
+                    <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Top" Height="100" IsHitTestVisible="False" Opacity="0.30">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#1800F2FE" Offset="0.0" />
+                                <GradientStop Color="#00000000" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+                    <Rectangle HorizontalAlignment="Stretch" VerticalAlignment="Bottom" Height="80" IsHitTestVisible="False" Opacity="0.25">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="1,1" EndPoint="0,0">
+                                <GradientStop Color="#158A2BE2" Offset="0.0" />
+                                <GradientStop Color="#00000000" Offset="1.0" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                    </Rectangle>
+
+                    <!-- Inspect Console Content Grid -->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Header: Back Navigation & Diagnostics Status -->
+                        <Grid Grid.Row="0" Margin="0,0,0,10">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="InspectBackButton" Grid.Column="0" Click="OnBackClicked"
+                                    Style="{StaticResource InstrumentIconButtonStyle}" Padding="6,4" CornerRadius="6"
+                                    ToolTipService.ToolTip="Return to Dashboard"
+                                    AutomationProperties.AutomationId="InspectBackButton"
+                                    AutomationProperties.Name="Dashboard">
+                                <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                    <FontIcon Glyph="&#xE72B;" FontSize="10" Foreground="{StaticResource AccentTextBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Text="Dashboard" FontSize="11" FontWeight="SemiBold" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Button>
+
+                            <StackPanel Grid.Column="2" HorizontalAlignment="Right" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                <Button x:Name="FreezeToggleButton" Click="OnToggleFreezeClicked" Style="{StaticResource InstrumentIconButtonStyle}" Padding="8,4" CornerRadius="6" VerticalAlignment="Center" ToolTipService.ToolTip="Pause/resume live updates">
+                                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                        <Ellipse Width="5" Height="5" Fill="{StaticResource StatusLiveBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{x:Bind ViewModel.InspectFreezeButtonLabel, Mode=OneWay}" FontSize="9.5" FontWeight="Medium" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                </Button>
+                                <StackPanel Spacing="1" VerticalAlignment="Center">
+                                    <TextBlock x:Name="InspectTitle" Text="INSPECT" FontSize="11" FontWeight="SemiBold" CharacterSpacing="75" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Right" />
+                                    <TextBlock x:Name="InspectSubtitle" Text="Live Diagnostics" FontSize="8.5" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- Segmented Selector -->
+                        <Border Grid.Row="1" Background="{StaticResource AppBackgroundElevatedBrush}" BorderBrush="{StaticResource AppBorderSubduedBrush}" BorderThickness="1" CornerRadius="8" Padding="2" Margin="0,0,0,10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <Button x:Name="ActivityTabButton" Grid.Column="0" Click="OnActivityTabClicked"
+                                        AutomationProperties.AutomationId="ActivityTabButton"
+                                        Style="{StaticResource InstrumentIconButtonStyle}" Padding="0"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" CornerRadius="6" Height="30" MinHeight="0">
+                                    <Border x:Name="ActivityTabIndicator" CornerRadius="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            Background="{StaticResource AccentSurfaceStrongBrush}">
+                                        <TextBlock x:Name="ActivityTabLabel" Text="ACTIVITY" FontSize="10" FontWeight="SemiBold"
+                                                   CharacterSpacing="70" Foreground="{StaticResource TextPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Button>
+
+                                <Button x:Name="DetailsTabButton" Grid.Column="1" Click="OnDetailsTabClicked"
+                                        AutomationProperties.AutomationId="DetailsTabButton"
+                                        Style="{StaticResource InstrumentIconButtonStyle}" Padding="0"
+                                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" CornerRadius="6" Height="30" MinHeight="0">
+                                    <Border x:Name="DetailsTabIndicator" CornerRadius="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                            Background="Transparent">
+                                        <TextBlock x:Name="DetailsTabLabel" Text="DETAILS" FontSize="10" FontWeight="SemiBold"
+                                                   CharacterSpacing="70" Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                    </Border>
+                                </Button>
+                            </Grid>
+                        </Border>
+
+                        <!-- Search (Activity view only) -->
+                        <Grid Grid.Row="2" Margin="0,0,0,8" Visibility="{x:Bind ViewModel.IsActivityView, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                            <TextBox Text="{x:Bind ViewModel.SearchQuery, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     PlaceholderText="Filter processes or PIDs..."
+                                     CornerRadius="6"
+                                     Height="30"
+                                     Padding="26,4,8,4"
+                                     Background="{StaticResource AppBackgroundElevatedBrush}"
+                                     BorderBrush="{StaticResource AppBorderSubduedBrush}"
+                                     BorderThickness="1"
+                                     FontSize="10.5" />
+                            <FontIcon Glyph="&#xE721;" FontSize="11" Foreground="{StaticResource TextMutedBrush}"
+                                      HorizontalAlignment="Left" VerticalAlignment="Center" Margin="9,0,0,0" IsHitTestVisible="False" />
+                        </Grid>
+
+                        <!-- ========== ACTIVITY CONTENT ========== -->
+                        <Grid x:Name="ActivityContent" Grid.Row="3"
+                              Visibility="{x:Bind ViewModel.IsActivityView, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                            <!-- Live application bandwidth workspace: natural content height when few rows, scrollable when overflowing -->
+                            <Border Visibility="{x:Bind ViewModel.HasInspectActivity, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    Background="{StaticResource AppBackgroundSecondaryCardBrush}"
+                                    BorderBrush="{StaticResource AppBorderSubduedBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="10"
+                                    Padding="12,10,12,8"
+                                    VerticalAlignment="Top">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Column header -->
+                                    <Grid Grid.Row="0" Padding="2,0,2,6">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" MinWidth="0" />
+                                            <ColumnDefinition Width="Auto" MinWidth="110" />
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Text="APPLICATION" FontSize="8.5" FontWeight="SemiBold" CharacterSpacing="80"
+                                                   Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                        <TextBlock Grid.Column="1" Text="DOWNLOAD  /  UPLOAD" FontSize="8.5" FontWeight="SemiBold" CharacterSpacing="75"
+                                                   Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                                    </Grid>
+                                    <Border Grid.Row="1" Height="1" Background="{StaticResource AppBorderSubduedBrush}" Margin="0,0,0,4" />
+
+                                    <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,2,0">
+                                        <ItemsControl ItemsSource="{x:Bind ViewModel.InspectActivityRows, Mode=OneWay}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate x:DataType="models:ProcessTraffic">
+                                                    <Grid MinHeight="44" Padding="2,6" BorderThickness="0,0,0,1"
+                                                          BorderBrush="{StaticResource AppBorderSubduedBrush}">
+                                                        <Grid.ColumnDefinitions>
+                                                            <!-- Column 0: Application Identity (Takes all available space) -->
+                                                            <ColumnDefinition Width="*" MinWidth="0" />
+                                                            <!-- Column 1: Stacked Download/Upload rates (Stable, fixed width) -->
+                                                            <ColumnDefinition Width="Auto" MinWidth="110" />
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <!-- Application identity: 2 lines with spacious breathing room -->
+                                                        <StackPanel Grid.Column="0" VerticalAlignment="Center" Spacing="2" Margin="0,0,10,0">
+                                                            <TextBlock Text="{x:Bind DisplayName}" FontSize="12" FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                            <TextBlock Text="{x:Bind FormattedInspectSubtitle}" FontSize="9.5"
+                                                                       Foreground="{StaticResource TextMutedBrush}" TextTrimming="CharacterEllipsis" />
+                                                        </StackPanel>
+
+                                                        <!-- Rates: Stacked dual-channel readouts with Cascadia Code -->
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2" HorizontalAlignment="Right">
+                                                            <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
+                                                                <TextBlock Text="&#x2193;" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource DownloadFlowBrush}" VerticalAlignment="Center" />
+                                                                <TextBlock Text="{x:Bind FormattedDownloadRate, Mode=OneWay}" FontSize="11" FontFamily="{StaticResource MonospaceFontFamily}"
+                                                                           FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                                                            </StackPanel>
+                                                            <StackPanel Orientation="Horizontal" Spacing="5" HorizontalAlignment="Right">
+                                                                <TextBlock Text="&#x2191;" FontSize="9.5" FontWeight="Bold" Foreground="{StaticResource UploadFlowBrush}" VerticalAlignment="Center" />
+                                                                <TextBlock Text="{x:Bind FormattedUploadRate, Mode=OneWay}" FontSize="11" FontFamily="{StaticResource MonospaceFontFamily}"
+                                                                           FontWeight="Medium" Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+
+                            <!-- Restrained empty state -->
+                            <StackPanel Visibility="{x:Bind ViewModel.HasInspectActivity, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="280" Spacing="8">
+                                <Grid Width="32" Height="32" HorizontalAlignment="Center">
+                                    <Ellipse Width="32" Height="32" Fill="{StaticResource AccentSurfaceBrush}" />
+                                    <FontIcon Glyph="&#xE8B9;" FontSize="14" Foreground="{StaticResource AccentPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7" />
+                                </Grid>
+                                <TextBlock Text="{x:Bind ViewModel.InspectActivityEmptyTitle, Mode=OneWay}" FontSize="11.5" FontWeight="SemiBold" CharacterSpacing="50"
+                                           Foreground="{StaticResource TextSecondaryBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                                <TextBlock Text="{x:Bind ViewModel.InspectActivityEmptyDetail, Mode=OneWay}" FontSize="9.5"
+                                           Foreground="{StaticResource TextMutedBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+
+                        <!-- ========== DETAILS CONTENT ========== -->
+                        <Grid Grid.Row="3"
+                              Visibility="{x:Bind ViewModel.IsDetailsView, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+
+                            <Grid Visibility="{x:Bind ViewModel.HasInspectGroups, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="*" />
+                                </Grid.RowDefinitions>
+
+                                <!-- Connection table header: PROTO | LOCAL | → | REMOTE | STATE | COPY -->
+                                <Grid Grid.Row="0" Padding="6,0,6,6" ColumnSpacing="3">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="36" />
+                                        <ColumnDefinition Width="*" MinWidth="65" />
+                                        <ColumnDefinition Width="10" />
+                                        <ColumnDefinition Width="*" MinWidth="65" />
+                                        <ColumnDefinition Width="62" />
+                                        <ColumnDefinition Width="34" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Grid.Column="0" Text="PROTO" FontSize="8.5" FontWeight="SemiBold" CharacterSpacing="20"
+                                               Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="1" Text="LOCAL" FontSize="8.5" FontWeight="SemiBold" CharacterSpacing="30"
+                                               Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="3" Text="REMOTE" FontSize="8.5" FontWeight="SemiBold" CharacterSpacing="30"
+                                               Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="4" Text="STATE" FontSize="8.5" FontWeight="SemiBold" CharacterSpacing="30"
+                                               Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                    <TextBlock Grid.Column="5" Text="COPY" FontSize="8.5" FontWeight="SemiBold" CharacterSpacing="30"
+                                               Foreground="{StaticResource TextMutedBrush}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,2,0" />
+                                </Grid>
+
+                                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,2,0">
+                                    <ItemsControl ItemsSource="{x:Bind ViewModel.InspectGroups, Mode=OneWay}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate x:DataType="models:ProcessConnectionGroup">
+                                                <StackPanel Margin="0,0,0,10">
+                                                    <!-- Native Process Section Header: 2-level hierarchy -->
+                                                    <Grid Margin="2,6,2,4">
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="Auto" />
+                                                            <ColumnDefinition Width="*" />
+                                                        </Grid.ColumnDefinitions>
+                                                        <!-- Subtle vertical accent bar spanning both lines -->
+                                                        <Border Grid.Column="0" Width="2.5" Height="26" CornerRadius="1.25"
+                                                                Background="{StaticResource AccentPrimaryBrush}"
+                                                                VerticalAlignment="Center" Margin="0,0,8,0" />
+                                                        <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                                                            <!-- Level 1: Process Name (Dominant, full available width, prominent) -->
+                                                            <TextBlock Text="{x:Bind ProcessName}" FontSize="12" FontWeight="SemiBold" CharacterSpacing="20"
+                                                                       Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis" />
+                                                            <!-- Level 2: Secondary Metadata (Quiet, muted PID and connection count) -->
+                                                            <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                                                                <TextBlock Text="PID" FontSize="8.5" FontWeight="SemiBold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                                <TextBlock Text="{x:Bind ProcessId}" FontSize="9.5" FontFamily="{StaticResource MonospaceFontFamily}"
+                                                                           Foreground="{StaticResource TextSecondaryBrush}" VerticalAlignment="Center" />
+                                                                <TextBlock Text="·" FontSize="9" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="1,0" />
+                                                                <TextBlock Text="{x:Bind FormattedConnectionCount, Mode=OneWay}" FontSize="9"
+                                                                           Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" />
+                                                            </StackPanel>
+                                                        </StackPanel>
+                                                    </Grid>
+
+                                                    <!-- Connection rows inside refined glass container -->
+                                                    <Border Background="{StaticResource AppBackgroundSecondaryCardBrush}"
+                                                            BorderBrush="{StaticResource AppBorderSubduedBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="8"
+                                                            Padding="6,4,6,4">
+                                                        <ItemsControl ItemsSource="{x:Bind Connections}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate x:DataType="models:ConnectionItem">
+                                                                    <Grid MinHeight="24" Padding="0,2" ColumnSpacing="3"
+                                                                          BorderBrush="{StaticResource AppBorderSubduedBrush}" BorderThickness="0,0,0,1">
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <!-- Col 0: PROTO -->
+                                                                            <ColumnDefinition Width="36" />
+                                                                            <!-- Col 1: LOCAL -->
+                                                                            <ColumnDefinition Width="*" MinWidth="65" />
+                                                                            <!-- Col 2: Arrow -->
+                                                                            <ColumnDefinition Width="10" />
+                                                                            <!-- Col 3: REMOTE -->
+                                                                            <ColumnDefinition Width="*" MinWidth="65" />
+                                                                            <!-- Col 4: STATE -->
+                                                                            <ColumnDefinition Width="62" />
+                                                                            <!-- Col 5: COPY -->
+                                                                            <ColumnDefinition Width="34" />
+                                                                        </Grid.ColumnDefinitions>
+
+                                                                        <!-- Col 0: PROTO -->
+                                                                        <TextBlock Grid.Column="0" Text="{x:Bind Protocol}" FontSize="8.5"
+                                                                                   FontFamily="{StaticResource MonospaceFontFamily}"
+                                                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                                                   VerticalAlignment="Center" />
+
+                                                                        <!-- Col 1: LOCAL (Pure atomic endpoint string) -->
+                                                                        <TextBlock Grid.Column="1" Text="{x:Bind LocalEndpoint}" FontSize="9"
+                                                                                   FontFamily="{StaticResource MonospaceFontFamily}"
+                                                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                                                   TextTrimming="CharacterEllipsis"
+                                                                                   IsTextSelectionEnabled="True"
+                                                                                   VerticalAlignment="Center" />
+
+                                                                        <!-- Col 2: Direction arrow -->
+                                                                        <TextBlock Grid.Column="2" Text="&#x2192;" FontSize="8.5"
+                                                                                   Foreground="{StaticResource TextMutedBrush}"
+                                                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+
+                                                                        <!-- Col 3: REMOTE (Pure atomic endpoint string) -->
+                                                                        <TextBlock Grid.Column="3" Text="{x:Bind RemoteEndpoint}" FontSize="9"
+                                                                                   FontFamily="{StaticResource MonospaceFontFamily}"
+                                                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                                                   TextTrimming="CharacterEllipsis"
+                                                                                   IsTextSelectionEnabled="True"
+                                                                                   VerticalAlignment="Center" />
+
+                                                                        <!-- Col 4: Connection State -->
+                                                                        <TextBlock Grid.Column="4" Text="{x:Bind State}"
+                                                                                   FontFamily="{StaticResource MonospaceFontFamily}" FontSize="8.5"
+                                                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                                                   TextTrimming="CharacterEllipsis"
+                                                                                   VerticalAlignment="Center" />
+
+                                                                        <!-- Col 5: COPY Affordances -->
+                                                                        <StackPanel Grid.Column="5" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                                                            <Button Tag="{x:Bind LocalEndpoint}"
+                                                                                    Click="OnCopyEndpointClicked"
+                                                                                    Style="{StaticResource InstrumentIconButtonStyle}"
+                                                                                    ToolTipService.ToolTip="Copy local endpoint"
+                                                                                    AutomationProperties.AutomationId="CopyLocalEndpoint"
+                                                                                    AutomationProperties.Name="CopyLocalEndpoint"
+                                                                                    AutomationProperties.HelpText="Copy local endpoint"
+                                                                                    Width="15" Height="15" MinWidth="0" MinHeight="0"
+                                                                                    Padding="0" VerticalAlignment="Center"
+                                                                                    Opacity="0.55">
+                                                                                <FontIcon Glyph="&#xE8C8;" FontSize="8" Foreground="{StaticResource TextMutedBrush}" />
+                                                                            </Button>
+                                                                            <Button Tag="{x:Bind RemoteEndpoint}"
+                                                                                    Click="OnCopyEndpointClicked"
+                                                                                    Style="{StaticResource InstrumentIconButtonStyle}"
+                                                                                    ToolTipService.ToolTip="Copy remote endpoint"
+                                                                                    AutomationProperties.AutomationId="CopyRemoteEndpoint"
+                                                                                    AutomationProperties.Name="CopyRemoteEndpoint"
+                                                                                    AutomationProperties.HelpText="Copy remote endpoint"
+                                                                                    Width="15" Height="15" MinWidth="0" MinHeight="0"
+                                                                                    Padding="0" VerticalAlignment="Center"
+                                                                                    Opacity="0.55">
+                                                                                <FontIcon Glyph="&#xE8C8;" FontSize="8" Foreground="{StaticResource TextMutedBrush}" />
+                                                                            </Button>
+                                                                        </StackPanel>
+                                                                    </Grid>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </Border>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Grid>
+
+                            <!-- Restrained empty state for details -->
+                            <StackPanel Visibility="{x:Bind ViewModel.HasInspectGroups, Mode=OneWay, Converter={StaticResource InvertedBoolToVisibilityConverter}}"
+                                        VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="280" Spacing="8">
+                                <Grid Width="32" Height="32" HorizontalAlignment="Center">
+                                    <Ellipse Width="32" Height="32" Fill="{StaticResource AccentSurfaceBrush}" />
+                                    <FontIcon Glyph="&#xE8B9;" FontSize="14" Foreground="{StaticResource AccentPrimaryBrush}" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.7" />
+                                </Grid>
+                                <TextBlock Text="NO ACTIVE CONNECTIONS" FontSize="11" FontWeight="SemiBold" CharacterSpacing="50"
+                                           Foreground="{StaticResource TextSecondaryBrush}" TextAlignment="Center" />
+                                <TextBlock Text="No active network endpoints detected for running applications." FontSize="9.5"
+                                           Foreground="{StaticResource TextMutedBrush}" TextAlignment="Center" TextWrapping="Wrap" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ============================================ -->
+        <!-- COLLAPSED MODE -->
+        <!-- ============================================ -->
+        <Border x:Name="CollapsedRoot" Margin="12,6,12,8" VerticalAlignment="Center"
+                Background="{StaticResource AppBackgroundElevatedBrush}"
+                BorderBrush="{StaticResource AppBorderSubduedBrush}"
+                BorderThickness="1"
+                CornerRadius="{StaticResource SurfaceCornerRadius}"
+                Visibility="{x:Bind ViewModel.IsCollapsed, Mode=OneWay, Converter={StaticResource BoolToVisibilityConverter}}"
+                Tapped="OnCollapsedCardTapped"
+                ToolTipService.ToolTip="Click to expand">
+            <Grid Padding="14,8">
+                <StackPanel Orientation="Horizontal" Spacing="14" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                        <TextBlock Text="&#x2193;" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource DownloadFlowBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Bind ViewModel.DownloadValueString, Mode=OneWay}" FontFamily="{StaticResource MonospaceFontFamily}" FontSize="16" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Bind ViewModel.SpeedUnitLabel, Mode=OneWay}" FontSize="9" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,0,0" />
+                    </StackPanel>
+                    <Border Width="1" Height="16" Background="{StaticResource AppBorderSubduedBrush}" VerticalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" Spacing="5" VerticalAlignment="Center">
+                        <TextBlock Text="&#x2191;" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource UploadFlowBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Bind ViewModel.UploadValueString, Mode=OneWay}" FontFamily="{StaticResource MonospaceFontFamily}" FontSize="16" FontWeight="Medium" Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center" />
+                        <TextBlock Text="{x:Bind ViewModel.SpeedUnitLabel, Mode=OneWay}" FontSize="9" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,0,0" />
+                    </StackPanel>
+                    <Border Width="1" Height="16" Background="{StaticResource AppBorderSubduedBrush}" VerticalAlignment="Center" />
+                    <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <FontIcon Glyph="&#xE720;" FontSize="12" Foreground="{x:Bind ViewModel.MicrophoneBrush, Mode=OneWay}" VerticalAlignment="Center" ToolTipService.ToolTip="Microphone" />
+                        <FontIcon Glyph="&#xE722;" FontSize="12" Foreground="{x:Bind ViewModel.CameraBrush, Mode=OneWay}" VerticalAlignment="Center" ToolTipService.ToolTip="Camera" />
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
+    </Grid>
+</Page>

@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "TRACE (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "TRACE (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
