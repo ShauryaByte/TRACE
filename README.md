@@ -54,11 +54,9 @@ TRACE is designed to be local-first and transparent:
 
 ## Download
 
-TRACE is currently available to build from source.
+Download the latest Windows release from the [GitHub Releases](https://github.com/ShauryaByte/TRACE/releases) page.
 
-When the first release is published, the installer and standalone builds will be available on the [GitHub Releases](https://github.com/ShauryaByte/TRACE/releases) page.
-
-For now, see [Building from Source](#building-from-source).
+For developers who prefer to build from source, see [Building from Source](#building-from-source).
 
 
 ---
