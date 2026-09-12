@@ -268,7 +268,6 @@ Developed with care by:
 **Shaurya Singh**
 - 📧 Email: [shauryaofficialx@gmail.com](mailto:shauryaofficialx@gmail.com)
 - 🐙 GitHub: [@ShauryaByte](https://github.com/ShauryaByte)
-- 💼 LinkedIn: [Shaurya Singh](https://www.linkedin.com/in/shauryasinghofficial)
 
 ---
 
